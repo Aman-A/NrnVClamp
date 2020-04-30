@@ -1,0 +1,63 @@
+// Reads diameter from diam.txt
+// pass in params_vec
+strdef run_name, current_dir
+current_dir = getcwd()
+
+run_name = "test" //if not defined in call (included for testing)
+load_potentials = 0 // default calculate in NEURON
+replace_ax = 0 // default leave axon
+// run_name should be defined in MATLAB's NEURON call (overwrites "test")
+// getParams(params_vec)
+proc getParams() { localobj params_vec
+	params_vec = $o1
+	// assign dt, tstop, and v_init in run_stim_pyr.hoc	
+	steps_per_ms = 1/params_vec.x[0] // make sure simulation runs with appropriate time resolution
+	dt = params_vec.x[0] 
+	tstop = params_vec.x[1]	
+	v_init = params_vec.x[2]
+	AMP = params_vec.x[3]
+	st_amp = params_vec.x[4] // for IClamp 
+	st_del = params_vec.x[5]
+	st_dur = params_vec.x[6]
+	st_mode = params_vec.x[15] // current injection mode
+	cell_id = params_vec.x[7] 
+	theta = params_vec.x[8]
+	phi = params_vec.x[9] // angle of Efield, included so that threshold value can be associated with Efield angle		
+	n_axon_seg = params_vec.x[10] // for number of axon segments in demofig1_Mainencell_AA_mat.hoc
+	ss_init = params_vec.x[11] // 1 for steady state initialization, 0 if not
+	record_mode = params_vec.x[12]
+	synapses_on = params_vec.x[13] // unused
+	resave = params_vec.x[14]	
+	record_dt = params_vec.x[16]
+	load_potentials = params_vec.x[17]
+	replace_ax = params_vec.x[18]
+	myelinate_ax = params_vec.x[19]
+	prune_ax = params_vec.x[20]
+	scale_ax = params_vec.x[21]
+	scale_apic_diam = params_vec.x[22]
+	scale_basal_diam = params_vec.x[23]
+	scale_soma_area = params_vec.x[24]
+	scale_basal_L = params_vec.x[25]
+	scale_mainax = params_vec.x[26]
+	min_myelinD = params_vec.x[27]
+	temp = params_vec.x[28]
+	max_myelin_order = params_vec.x[29]
+	print "**Read model parameters from text file"	
+	printf("dt = %.4f ms, tstop = %.2f ms, v_init = %.2f mV, temp = %.2f C\n",params_vec.x[0],params_vec.x[1],params_vec.x[2],params_vec.x[28])
+	printf("Steady state initialization = %g. Record Mode = %g. Record time step = %.3f ms\n",ss_init,record_mode,record_dt)
+	printf("E field amp = %.2f, theta = %.2f deg, phi = %.2f deg. Load_potentials = %g\n",AMP,theta,phi,load_potentials)
+	printf("Current clamp amp = %.2f, del = %.2f, dur = %f , mode = %g\n",st_amp,st_del,st_dur,st_mode)
+	printf("Cell ID: %g. Replace axon = %g. Myelinate axon = %g. n_axon_seg = %g. Resave = %g \n",cell_id,replace_ax,myelinate_ax,n_axon_seg,resave)	
+	printf("Synapses on = %g. Prune axon = %g. Scale axon diam = %.1f. Scale main axon diam = %.1f\n",synapses_on,prune_ax,scale_ax,scale_mainax)
+	printf("Scale apic diam = %.2f. Scale basal diam = %.2f.\nScale soma area = %.2f. Scale basal L = %.2f\n",scale_apic_diam,scale_basal_diam,scale_soma_area,scale_basal_L)
+	if (myelinate_ax==1) {
+		printf("min_myelinD = %.2f. max_myelin_order = %g.\n",min_myelinD,max_myelin_order)
+	}			
+	if (ss_init==1){
+		strdef ss_file
+		sprint(ss_file,"%sssprocinit.hoc",current_dir)
+		{load_file(ss_file)}
+	}	
+}
+
+//getParams()

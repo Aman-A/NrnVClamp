@@ -1,0 +1,17 @@
+load_file("nrngui.hoc")
+
+create soma
+soma {
+    insert nafJonas
+    gbar_nafJonas = 1
+}
+objref cl
+cl = new SEClamp(0.5)
+cl.dur1 = 200
+cl.amp1 = -120
+cl.dur2 = 30
+cl.amp2 = 0
+cl.rs = 0.001
+tstop = cl.dur1+cl.dur2
+
+

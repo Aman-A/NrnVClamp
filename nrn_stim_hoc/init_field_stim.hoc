@@ -1,0 +1,57 @@
+// open after init_field_stim.hoc, interp_coordinates and setpointer need to 
+// have run, in addition to solution of voltage at node coordinates
+// use with calc_V_ptsource.m to get potentials for point source
+// use with calv_V_bipoloar.m to get potentials for bipolar electrode
+// use with calv_V.m to get potentials for parallel plates (uniform E-field)
+//{load_file("nrngui.hoc")}
+{load_file("getParams.hoc")}
+{load_file("interp_coordinates.hoc")}
+{load_file("setpointers.hoc")}
+{load_file("modify_cell.hoc")}
+{load_file("edit_morphology.hoc")} // procs for editing cell morphology
+{load_file("get_es.hoc")} // analogue -> calcrxc.hoc
+{load_file("stim_wave_import.hoc")} // -> stim.hoc
+{load_file("threshold_finder_clust.hoc")}
+{load_file("run_stim.hoc")}
+//{load_file("rig_mat.ses")}
+// //{load_file("add_axons.hoc")} // loads axons
+
+
+
+
+// {load_file("rig_mat.ses")} //contains RunControl
+// {load_file("threshold_finder_clust.hoc")} // threshold finder functions
+// {load_file("run_stim_pyr.hoc")} // main model procs
+
+/*
+getParams()
+cell_chooser(cell_id)
+init_record_spikes_all_more4()
+getes()
+//{load_file("testing2.ses")}
+// 
+//init_record_spikes_all_more4()
+//getes()
+proc get_thresh(){
+	threshE = threshold_pos_more(&AMP)
+	print "Threshold E is ", threshE
+	AMP=1
+}
+get_thresh()
+*/
+
+/*
+  xpanel("Extracellular Stimulation", 0)    
+    xvalue("Field strength (V/m)", "AMP", 1, "setstim(AMP)", 0, 1)    
+	xvalue("Theta (deg)","theta",120,"getes()",0,1)
+	xvalue("Phi (deg)","phi",180,"getes()",0,1)
+	xbutton("Stimul()","stimul()")
+	xbutton("Get Threshold","get_thresh()")
+  xpanel(73,497)
+
+ // load_file("pr_ax_test.hoc")
+*/
+//  proc rotate_plot() {
+// 	plot_num = $1
+// 	PlotShape[plot_num].rotate(1,0,0,PI/2,0,0)
+// }

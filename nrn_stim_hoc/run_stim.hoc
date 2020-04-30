@@ -1,0 +1,62 @@
+proc stimul() {
+	finitialize(v_init)
+	setstim(AMP) // set amplitude of stimulation waveform
+	run()
+	printf("Efield amp = %.5f V/m\n",AMP) // print E-field amplitude
+}
+objref netids_all, netcon_tmp, nil // for saving ap times and netids from centers
+objref netcon_tmp1, netcon_tmp2 // for saving ap times and netids when recording from centers and ends
+objref vm_oarray // array of Vm vectors (from x=0.5, 1/section, or every compartment)
+objref section_types, branchorders, diams // used in both init_record_vm() and init_record_vm_more()
+
+proc init_record_spikes(){ local i, ii, in
+    if (record_mode == 4){ // record spikes in every compartment 
+        ap_times_all = new Vector()
+        netids_all = new Vector()
+        // record from soma at x=0.5
+        secrefs.o(0).sec { // soma id = 1                
+                netcon_tmp1 = new NetCon(&v(0.5),nil)
+                netcon_tmp1.threshold = 0
+                netcon_tmp1.record(ap_times_all,netids_all,1) // record ap times to ap_times_all and the id of each event in netids_all
+                objref netcon_tmp1			
+            }
+        // record from rest of sections at x=0.5 an x=1
+        //ii =2 // 
+        in = 1	// start netids at 2, since soma is 1. retains count between sections
+        for i = 1, numSect-1{		
+            secrefs.o(i).sec {                
+                for ix = 1,nseg { 
+                    ii = in + ix				
+                    xval = (2*ix-1)/(2*nseg)
+                    netcon_tmp = new NetCon(&secrefs.o(i).sec.v(xval),nil)				
+                    netcon_tmp.threshold = 0
+                    netcon_tmp.record(ap_times_all,netids_all,ii)					
+                    //printf("ix=%g. Inserted netcon at v(%.2f) with netid = %g\n",ix,xval,ii)
+                    objref netcon_tmp // reinitialize	
+                }			
+                in = ii			
+            }
+        }
+        print "NetCons created in every compartment - spike times recorded to ap_times_all and ids saved to netids_all"
+    } else if (record_mode == 5) { // record spikes from soma
+        ap_times_all = new Vector()
+        netids_all = new Vector()
+        secrefs.o(0).sec { // soma
+            netcon_tmp = new NetCon(&v(0.5), nil)
+        }
+        netcon_tmp.threshold = somaAP_thresh
+        netcon_tmp.record(ap_times_all,netids_all,1) // all netids will be 1
+        objref netcon_tmp	
+        numAPs = 0 // need 1 spike in soma for threshold
+    }
+}
+
+func find_thresh() {    
+    if (AMP < 0) {
+        //AMP = 1 // set to positive number
+        threshE = threshold_neg(&AMP) // negative amplitude threshold
+    } else { 
+        threshE = threshold_pos(&AMP) // positive amplitude threshold
+    }
+    return threshE
+}
