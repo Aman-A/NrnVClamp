@@ -32,7 +32,7 @@ NEURON {
 }
 
 PARAMETER {
-	gbar = 100 (S/cm2)
+	gbar = 1 (S/cm2)
 	:gbar = 100   	(pS/um2)	: 0.12 mho/cm2
 	vshift = -5	(mV)		: voltage shift (affects all)
 								
@@ -69,7 +69,7 @@ UNITS {
 
 ASSIGNED {
 	ina 		(mA/cm2)
-	gna		(pS/um2)
+	gna		(S/cm2)
 	ena		(mV)
 	minf 		hinf
 	mtau (ms)	htau (ms)
@@ -88,7 +88,8 @@ INITIAL {
 BREAKPOINT {
         SOLVE states
         gna = tadj*gbar*m*m*m*h
-	ina = (1e-4) * gna * (v - ena)
+	:ina = (1e-4) * gna * (v - ena) : converts from gna (pS/cm2) to ina (mA/cm2)
+	ina = gna * (v - ena)
 } 
 
 LOCAL mexp, hexp 

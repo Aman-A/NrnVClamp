@@ -22,8 +22,18 @@ def fit_double_exp(t_vec,y_vec):
     tau2 = 1/fits[3]    
     return tau1, tau2
 
-def fit_single_exp(t_vec,y_vec):
-    fits,covs = curve_fit(single_exp,t_vec,y_vec,p0=(y_vec.min(),0.1,t_vec[1]),bounds=([1.5*y_vec.min(),0.005,0],[0,0.8,0.1]))
+def fit_single_exp(t_vec,y_vec,p0=None,bounds=None):        
+    if y_vec[np.abs(y_vec[0]).argmax()] < 0: # inward current, prob Na
+        if p0 is None:
+            p0 = (y_vec.min(),0.1,t_vec[1])
+        if bounds is None:
+            bounds = ([1.5*y_vec.min(),0.005,0],[0,0.8,0.1])        
+    else: # outward current, prob K
+        if p0 is None:
+            p0 = (y_vec.max(),1,t_vec[1])
+        if bounds is None:
+            bounds = ([0,0.005,0],[1.5*y_vec.max(),5,0.1])
+    fits,covs = curve_fit(single_exp,t_vec,y_vec,p0=p0,bounds=bounds,method='dogbox')
     tau1 = fits[1]       
     return tau1,fits
     

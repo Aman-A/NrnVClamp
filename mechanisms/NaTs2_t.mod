@@ -5,6 +5,7 @@ NEURON	{
 	SUFFIX NaTs2_t
 	USEION na READ ena WRITE ina
 	RANGE gNaTs2_tbar, gNaTs2_t, ina
+	GLOBAL q10
 }
 
 UNITS	{
@@ -15,6 +16,7 @@ UNITS	{
 
 PARAMETER	{
 	gNaTs2_tbar = 1 (S/cm2)
+	q10  = 2.3			: temperature sensitivity
 }
 
 ASSIGNED	{
@@ -44,21 +46,21 @@ BREAKPOINT	{
 }
 
 DERIVATIVE states	{
-	rates()
+	rates(q10)
 	m' = (mInf-m)/mTau
 	h' = (hInf-h)/hTau
 }
 
 INITIAL{
-	rates()
+	rates(q10)
 	m = mInf
 	h = hInf
 }
 
-PROCEDURE rates(){
+PROCEDURE rates(q10){
   LOCAL qt
   :qt = 2.3^((34-21)/10)
-  qt = 2.3^((celsius-21)/10)	
+  qt = q10^((celsius-21)/10)	
 	UNITSOFF
     if(v == -32){
     	v = v+0.0001

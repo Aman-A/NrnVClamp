@@ -4,6 +4,7 @@ NEURON	{
 	SUFFIX NaTa_t
 	USEION na READ ena WRITE ina
 	RANGE gNaTa_tbar, gNaTa_t, ina, vtha, vthi,qa,qi, mtau_scale, htau_scale
+	GLOBAL q10
 }
 
 UNITS	{
@@ -20,6 +21,7 @@ PARAMETER	{
 	qi = 6 (1) : inactivation slope	
     mtau_scale = 1 (1) : scaling on activation time constant
     htau_scale = 1 (1) : scaling on inactivation time constant
+	q10  = 2.3			: temperature sensitivity
 }
 
 ASSIGNED	{
@@ -49,21 +51,21 @@ BREAKPOINT	{
 }
 
 DERIVATIVE states	{
-	rates()
+	rates(q10)
 	m' = (mInf-m)/mTau
 	h' = (hInf-h)/hTau
 }
 
 INITIAL{
-	rates()
+	rates(q10)
 	m = mInf
 	h = hInf
 }
 
-PROCEDURE rates(){
+PROCEDURE rates(q10){
   LOCAL qt
   :qt = 2.3^((34-21)/10)
-  qt = 2.3^((celsius-21)/10)	
+  qt = q10^((celsius-21)/10)	
   UNITSOFF
     if(v == -38){
     	v = v+0.0001

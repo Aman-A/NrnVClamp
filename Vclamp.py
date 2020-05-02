@@ -11,17 +11,17 @@ h.load_file('stdrun.hoc')
 import numpy as np
 
 class Vclamp_tester:
-    def __init__(self,chan_name='NaTa_t',curr_name='ina',gmax=1,gbar_name = 'gNaTa_tbar', \
-                 g_name='gNaTa_t', clamp_params=dict(), dt=0.001,T=37,q10=2.3,**kwargs):
-        if kwargs:            
-            Ex = kwargs # ena,ek, etc.
+    def __init__(self,chan_name='NaTa_t',curr_name='ina',gbar=100,gbar_name = 'gNaTa_tbar', \
+                 g_name='gNaTa_t', clamp_params=dict(), dt=0.001,T=37,q10=2.3,**Erev):
+        if Erev:            
+            Ex = Erev # ena,ek, etc.
         else:
             Ex = dict(ena=50) # default Ena for NaTa_t"            
         self.chan_name = chan_name
         self.curr_name = curr_name
         self.gbar_name = gbar_name + '_' + chan_name # add suffix
         self.g_name = g_name + '_' + chan_name # add suffix
-        self.gmax = gmax
+        self.gbar = gbar
         self.params = dict(dt=dt,T=T,q10=q10,Ex=Ex)
         # initialize to     
         self.cell = self.create_cell()    
@@ -35,10 +35,11 @@ class Vclamp_tester:
         cell.L = 4/np.pi # gives area of 4 um2
         cell.diam = 1
         cell.cm = 0
-        cell.insert(self.chan_name)
+        cell.insert(self.chan_name)        
         for ex_name,ex_val in self.params['Ex'].items():
-            setattr(cell,ex_name,ex_val)
-        setattr(cell,self.gbar_name,1)
+            if cell.has_membrane('{}_ion'.format(ex_name[1:])): # set Erev if has ion
+                setattr(cell,ex_name,ex_val)
+        setattr(cell,self.gbar_name,self.gbar)
         #cell.ena = self.params['Ena']
         #cell.ek = self.params['Ek']
         cell.nseg = 1
@@ -72,9 +73,15 @@ class Vclamp_tester:
         self.params
         h.dt = self.params['dt'] # set NEURON parameters
         h.celsius = self.params['T']
-        h("q10 = {}".format(self.params['q10']))
         h.tstop = self.params['tstop']
-        print("dt = {:.3f} ms, celsius = {}, q10 = {}, tstop = {}".format(h.dt,h.celsius,h.q10,self.params['tstop']))
+        # print("dt = {:.3f} ms, celsius = {}, q10 = {}, tstop = {}".format(h.dt,h.celsius,h.q10,self.params['tstop']))
+        print("dt = {:.3f} ms, celsius = {}, tstop = {}".format(h.dt,h.celsius,self.params['tstop']))
+        q10_str = 'q10_{}'.format(self.chan_name)
+        if self.params['q10'] is not None:
+            h("{} = {}".format(q10_str,self.params['q10']))
+            print("set {} = {}".format(q10_str,self.params['q10']))
+        else:
+            print("Using default {} = {}".format(q10_str,getattr(h,q10_str)))
     def create_recordings(self,cell):
         t_vec = h.Vector() # time vector
         t_vec.record(h._ref_t)        
@@ -85,6 +92,29 @@ class Vclamp_tester:
         g_vec = h.Vector() # conductance vector
         g_vec.record(getattr(cell(0.5),"_ref_{}".format(self.g_name)))
         return t_vec,v_vec,i_vec,g_vec
+    # Run activation protocol
+    def run_protocol(self, clamp_params):        
+        t_vec,v_vec,i_vec,g_vec = self.create_recordings(self.cell)
+        if 'amp_to_step'  in clamp_params:
+            amp_to_step = clamp_params['amp_to_step']
+        else:
+            amp_to_step = 'amp2'
+            print("amp_to_step not entered in clamp_params, assuming activation protocol")
+        v_steps = np.arange(clamp_params['v_stepi'], clamp_params['v_stepf'],clamp_params['dv_step'])
+        vs= []
+        currs = []
+        gs = []    
+        for vi in v_steps:        
+            # self.clamp.amp2 = vi # set new voltage step
+            setattr(self.clamp,amp_to_step,vi)
+            # run
+            h.v_init = self.clamp.amp1
+            h.run()                        
+            vs.append(v_vec.to_python(np.zeros(len(v_vec))))
+            currs.append(i_vec.to_python(np.zeros(len(i_vec))))        
+            gs.append(g_vec.to_python(np.zeros(len(g_vec))))   
+        t_vec = t_vec.to_python(np.zeros(len(t_vec)))
+        return v_steps,t_vec,vs,currs,gs # outputs all numpy arrays
         
 
                 
@@ -92,24 +122,7 @@ class Vclamp_tester:
         
 # Simulation loop
 
-# Run activation protocol
-def run_VClamp_act(vclamp_tester, clamp_params):        
-    t_vec,v_vec,i_vec,g_vec = vclamp_tester.create_recordings(vclamp_tester.cell)
-    
-    v_steps = np.arange(clamp_params['v_stepi'], clamp_params['v_stepf'],clamp_params['dv_step'])
-    vs= []
-    currs = []
-    gs = []    
-    for vi in v_steps:        
-        vclamp_tester.clamp.amp2 = vi # set new voltage step
-        # run
-        h.v_init = clamp_params['amp1']
-        h.run()                        
-        vs.append(v_vec.to_python(np.zeros(len(v_vec))))
-        currs.append(i_vec.to_python(np.zeros(len(i_vec))))
-        gs.append(g_vec.to_python(np.zeros(len(g_vec))))   
-    t_vec = t_vec.to_python(np.zeros(len(t_vec)))
-    return v_steps,t_vec,vs,currs,gs # outputs all numpy arrays
+
    
 
 

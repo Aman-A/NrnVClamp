@@ -9,6 +9,7 @@ ENDCOMMENT
 INDEPENDENT { t FROM 0 TO 1 WITH 1 (ms) }
 
 UNITS { 
+	(S) = (siemens)
 	(mV) = (millivolt) 
 	(mA) = (milliamp) 
 } 
@@ -18,14 +19,15 @@ NEURON {
 	RANGE gbar, ina
 }
 
-PARAMETER { 
-	gbar = 0.0 	(mho/cm2)
+PARAMETER { 	
+	gbar = 0.0 	(S/cm2)
 	v ena 		(mV)  
 } 
 ASSIGNED { 
 	ina 		(mA/cm2) 
 	minf 		(1)
 	mtau 		(ms) 
+	g (S/cm2)
 } 
 STATE {
 	m
@@ -33,7 +35,8 @@ STATE {
 
 BREAKPOINT { 
 	SOLVE states METHOD cnexp
-	ina = gbar * m * ( v - ena ) 
+	g = gbar * m 
+	ina = g * ( v - ena ) 
 } 
 
 INITIAL { 

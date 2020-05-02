@@ -5,6 +5,7 @@ NEURON	{
 	SUFFIX Im
 	USEION k READ ek WRITE ik
 	RANGE gImbar, gIm, ik
+	GLOBAL q10
 }
 
 UNITS	{
@@ -15,6 +16,7 @@ UNITS	{
 
 PARAMETER	{
 	gImbar = 0.00001 (S/cm2) 
+	q10 = 2.3
 }
 
 ASSIGNED	{
@@ -39,19 +41,19 @@ BREAKPOINT	{
 }
 
 DERIVATIVE states	{
-	rates()
+	rates(q10)
 	m' = (mInf-m)/mTau
 }
 
 INITIAL{
-	rates()
+	rates(q10)
 	m = mInf
 }
 
-PROCEDURE rates(){
+PROCEDURE rates(q10){
   LOCAL qt
   :qt = 2.3^((34-21)/10)
-  qt = 2.3^((celsius-21)/10)	
+  qt = q10^((celsius-21)/10)	
 
 	UNITSOFF
 		mAlpha = 3.3e-3*exp(2.5*0.04*(v - -35))

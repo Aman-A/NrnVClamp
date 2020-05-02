@@ -1,28 +1,31 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr 10 12:48:41 2020
+Created on Mon Jun 18 09:49:09 2018
 
 @author: amanaberra
 """
 # Activation protocol for Na channels/current
 import os
-#os.system('nrnivmodl mechanisms')
-#os.system('cp x86_64/special .')
+# os.system('nrnivmodl mechanisms')
+# os.system('cp x86_64/special .')
 import matplotlib
 matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
 import numpy as np
+from math import pi
 # VClamp testing code
 from neuron import h #, gui # make sure default -NSTACK and -NFRAME are set to 100000,20000
-from Vclamp import Vclamp_tester, run_VClamp_act
+from Vclamp import Vclamp_tester
 from plot_Vclamp import plot_recs,plot_gmax, plot_tau
 import pickle # for saving
 from scipy.io import savemat
+from scipy.ndimage import gaussian_filter
 from fit_taus import fit_double_exp,fit_single_exp, single_exp
 fig_folder = 'Figures/Vclamp'
 data_folder = 'Data/Vclamp'
-calc_tau = True
+calc_tau = False
+fc = None # Hz (fc = 10 kHz from Schmidt-Hieber 2010 for gaussian filter)
 save_figs = False
 save_data = False
 #chan_names = ['MCna1']
@@ -32,36 +35,39 @@ all_channels = {'NaTa_t':{'gbar':'gNaTa_tbar','g':'gNaTa_t','color':'b'}, # Blue
             'na6_gp':{'gbar':'gbar','g':'g','color':'r'}, # Globus Pallidus Nav1.6 (Mercer 2007)
             'na16':{'gbar':'gbar','g':'gna','color':'b'}, # AIS Nav1.6 (Hu 2009)
             'na12':{'gbar':'gbar','g':'gna','color':'g'}, # AIS/soma Nav1.2 (Hu 2009)
-            'NaTs2_t':{'gbar':'gNaTs2_tbar','g':'gNaTs2_t','color':'m'}, # Blue Brain somatic (Colbert & Pan 2002) 
+            'NaTs2_t':{'gbar':'gNaTs2_tbar','g':'gNaTs2_t','color':'g'}, # Blue Brain somatic (Colbert & Pan 2002) 
             'naf':{'gbar':'gbar','g':'gna','color':'k'}, # Fast Na (Traub 2003)
             'nax_kole2008':{'gbar':'gbar','g':'gna','color':'k'}, # Axonal Nav (Kole 2008)
             'na_kole2008':{'gbar':'gbar','g':'gna','color':'k'}, # Somatic Nav (Kole 2008)
-            'nafJonas':{'gbar':'gbar','g':'gna','color':'r'}, # Fast Na in MFB (based on Engel 2005, impl in Schmidt-Hieber 2008)
+            'nafJonas':{'gbar':'gbar','g':'gna','color':'g'}, # Fast Na in MFB (based on Engel 2005, impl in Schmidt-Hieber 2008)
             'NaV':{'gbar':'gbar','g':'gna','color':'r'}, # Mouse Na from Allen models, based on (Carter 2012) (37° rec in mouse CA1 pyramids)
             'nax':{'gbar':'gbar','g':'gna','color':'r'}, # Axonal Na 8st model from Schmidt-Hieber 2010
             'na8st':{'gbar':'gbar','g':'gna','color':'k'}, # Somatic Na 8st model from Schmidt-Hieber 2010
-            'MCna1':{'gbar':'gna1bar','g':'gna1','color':'r'}} # 2-closed, 1 open state Na channel (Baranauskas 2006)
-sim_channels = ['NaTs2_t','NaTa_t','na8st','nax'] # 'na16','na12','nax',
-#sim_channels = ['nax']
+            'MCna1':{'gbar':'gna1bar','g':'gna1','color':'r'}, # 2-closed, 1 open state Na channel (Baranauskas 2006)
+            'nav6':{'gbar':'gbar','g':'g','color':'m'}} # Nav1.6 by Nathan Titus (adapted from Tigerholm model)
+sim_channels = ['na12','na16']
+# sim_channels = ['NaTs2_t','NaTa_t','na8st','nax'] # 'na16','na12','nax',
+# sim_channels = ['nax','na8st','nav6','nafJonas']
 channels = {k:all_channels[k] for k in sim_channels if k in all_channels}
 #colors = ['k','r','b','g','m']
 curr_name = 'ina'
 clamp_params = {'amp1':-120, 
-                'dur1':50, 
-                'amp2':-120,
-                'dur2': 20,
+                'dur1':30, 
+                'amp2':20,
+                'dur2': 30,
                 'amp3':0,
                 'dur3':0,
-                'v_stepi':-60,
-                'v_stepf':20,
+                'v_stepi':-120,
+                'v_stepf':25,
                 'dv_step': 5,
+                'amp_to_step': 'amp1', # inactivation protocol steps 1st phase
                 'rs':1e-3,
                 'x':0.5}
 # NEURON settings
 # Settings
 dt = 0.001 # 1 µs
 Ena = 50 # 55 for Kole 2008
-T = 37
+T = 23
 q10 = 2.3 # rate constant coefficient
 
 # Plot activation curves
@@ -76,7 +82,7 @@ for chan_name,_ in channels.items():
                                    g_name=channels[chan_name]['g'],clamp_params=clamp_params,dt=dt,T=T,q10=q10,ena=Ena)
 
     # Run vclamp simulations
-    v_steps,t_vec,vs,currs,gs = run_VClamp_act(clamp_test, clamp_params) 
+    v_steps,t_vec,vs,currs,gs = clamp_test.run_protocol(clamp_params)
     cmin_global = min([min(c) for c in currs])    
     t_vec = t_vec - clamp_params['dur1'] # V step starts at 0
     # get tau fits for currents 
@@ -90,6 +96,12 @@ for chan_name,_ in channels.items():
             c_act = c[np.int(clamp_params['dur1']/dt):c.argmin()]
             if c.min() < min_curr*cmin_global:
                 try:
+                    if fc is not None:
+                        Fs = 1e3/dt # sampling freq
+#                        c = 2
+#                        sigma = np.sqrt(2*np.log(c))*Fs/(2*pi*fc)
+                        sigma = Fs/(2*pi*fc)
+                        c_act = gaussian_filter(c_act,sigma)
                     tau1[i],fit = fit_single_exp(t_act,c_act)
                     tau2[i] = np.nan
                     c_actfi = single_exp(t_act,fit[0],fit[1],fit[2])
@@ -110,7 +122,7 @@ for chan_name,_ in channels.items():
     gmax = max([max(g) for g in gs])
     g_vecsn = [g/gmax for g in gs]
     
-    fig1, ax1, ax2, ax3 = plot_recs(t_vec,vs,currs,gs) # plot v,curr, and g/gmax
+    fig1, ax1, ax2, ax3 = plot_recs(t_vec,vs,currs,g_vecsn) # plot v,curr, and g/gmax
     ax1.set_title(chan_name)
     # save recordings for this current
     if save_figs:
@@ -127,9 +139,9 @@ for chan_name,_ in channels.items():
         for tf,cf in zip(t_acts,c_actfs):
             ax2.plot(tf,cf,'k--')
         if not fig3:
-            fig3,ax5 = plot_tau(v_steps,tau1,tau2,channels[chan_name]['color'],chan_name) # create fig
+            fig3,ax5 = plot_tau(v_steps,tau1,channels[chan_name]['color'],chan_name) # create fig
         else:
-            plot_tau(v_steps,tau1,tau2,channels[chan_name]['color'],chan_name,fig3,ax5) # add to fig
+            plot_tau(v_steps,tau1,channels[chan_name]['color'],chan_name,fig3,ax5) # add to fig
     datai = {}    
     datai['v_steps'] = v_steps
     datai['gs'] = gs
@@ -149,5 +161,7 @@ for chan_name,_ in channels.items():
 # Save single gmax figure
 plt.show()
 if save_figs:    
-    fig2_name = os.path.join(fig_folder,''.join(chan_namei + '_' for chan_namei in chan_names) + 'gmax')
+    fig2_name = os.path.join(fig_folder,''.join(chan_namei + '_' for chan_namei in sim_channels) + 'gmax')
     fig2.savefig(fig2_name,dpi=200)
+
+        

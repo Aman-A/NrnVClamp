@@ -14,7 +14,7 @@ def get_cell_files():
     cell_files = {} 
     for celli in os.listdir(cell_dir):
         celli_path = os.path.join(cell_dir,celli)
-        if os.path.isdir(celli_path): # make sure its a folder            
+        if os.path.isdir(celli_path) and celli != '__pycache__': # make sure its a folder            
              # morphology template name in morphology.hoc             
             with open(os.path.join(celli_path,"morphology.hoc")) as morph_hoc:
                 morph_tempi = morph_hoc.readlines()[temp_name_line_morph-1].split()[temp_name_word_morph-1]

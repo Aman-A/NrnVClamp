@@ -15,13 +15,13 @@ import scipy.io
 def TMS_wave(dt=0.005,tstop=1,delay=0.005,mode=3,plot_wave=1):                  
     # Get data
     data = scipy.io.loadmat('TMSwaves.mat');
-    if mode is 3: # MagproX100 Monophasic waveform - Recorded by Lari Koponen (6/12/18)            
+    if mode == 3: # MagproX100 Monophasic waveform - Recorded by Lari Koponen (6/12/18)            
         trec = data['tm']; Erec = data['Erec_m'];                        
         title_string = 'Normalized E - MagproX100 Monophasic, delay = {:.1f} ms'.format(delay);            
-    elif mode is 4: # MagproX100 Biphasic waveform - Recorded by Lari Koponen (6/12/18)
+    elif mode == 4: # MagproX100 Biphasic waveform - Recorded by Lari Koponen (6/12/18)
         trec = data.tb; Erec = data['Erec_b'];            
         title_string = 'Normalized E - MagproX100 Biphasic, delay = {:.1f} ms'.format(delay);            
-    elif mode is 5: # MagproX100 Half-sine waveform - Recorded by Lari Koponen (6/12/18)            
+    elif mode == 5: # MagproX100 Half-sine waveform - Recorded by Lari Koponen (6/12/18)            
         trec = data.th; Erec = data['Erec_h'];            
         title_string = 'Normalized E - MagproX100 Half sine, delay = {:.1f} ms'.format(delay);            
     # Downsample for simulation specific time step
@@ -29,7 +29,7 @@ def TMS_wave(dt=0.005,tstop=1,delay=0.005,mode=3,plot_wave=1):
     sample_factor = int(dt/DT);
     if sample_factor < 1: # dt chosen is smaller than DT of recording
        sample_factor = 1; # don't downsample 
-       print 'dt chosen smaller than recording, set to {:f} ms\n'.format(DT) 
+       print('dt chosen smaller than recording, set to {:f} ms'.format(DT))
     trec = trec.flatten(); Erec = Erec.flatten()
     # construct final vectors            
     if delay >= dt:      
@@ -47,9 +47,8 @@ def TMS_wave(dt=0.005,tstop=1,delay=0.005,mode=3,plot_wave=1):
         Evec = Evec[0:tvec.size];
     
     if plot_wave:
-        import matplotlib as mpl
         import matplotlib.pyplot as plt
-        fig = plt.figure(facecolor='w');
+        plt.figure(facecolor='w');
         ax = plt.subplot(111)
         ax.plot(tvec,Evec,color='k',linewidth=2)
         ax.spines["right"].set_visible(False)

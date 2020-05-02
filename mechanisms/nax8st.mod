@@ -26,11 +26,11 @@ NEURON {
 
     USEION na READ ena WRITE ina
 
-    GLOBAL vShift, vShift_inact, maxrate
+    GLOBAL vShift, vShift_inact, maxrate, q10
 
     RANGE vShift_inact_local
 
-    RANGE gna, gbar, ina_inax
+    RANGE gna, gbar :, ina_inax
 
     RANGE a1_0, a1_1, b1_0, b1_1, a2_0, a2_1
 
@@ -128,7 +128,9 @@ PARAMETER {
 
 	temp = 23	(degC)		: original temp 
 	q10  = 2.3			: temperature sensitivity
-	q10h  = 2.3			: temperature sensitivity
+	:q10h  = 2.3			: temperature sensitivity
+    :q10  = 3.0			: temperature sensitivity used in Hallerman 2012
+	
 	celsius		(degC)
 
 }
@@ -146,7 +148,7 @@ ASSIGNED {
 
     ina  (milliamp/cm2)
 
-    ina_inax (milliamp/cm2) 	:to monitor the current 
+    :ina_inax (milliamp/cm2) 	:to monitor the current 
 
     a1   (/ms)
 
@@ -184,7 +186,7 @@ BREAKPOINT {
 
 :   ina = g*(v - ena)*(1e-3)
     ina = gna*(v - ena) 	: define  gbar as pS/um2 instead of mllimho/cm2
-    ina_inax = gna*(v - ena)*(1e-4) 	: define  gbar as pS/um2 instead of mllimho/cm2   :to monitor
+    :ina_inax = gna*(v - ena)*(1e-4) 	: define  gbar as pS/um2 instead of mllimho/cm2   :to monitor
 
 }
 
@@ -238,7 +240,8 @@ PROCEDURE rates(v(millivolt)) {
 
     tadj = q10^((celsius - temp)/10)
 
-    tadjh = q10h^((celsius - temp)/10)
+    :tadjh = q10h^((celsius - temp)/10)
+    tadjh = q10^((celsius - temp)/10) : use same q10
 
  
    a1 = tadj*a1_0*exp( a1_1*vS)

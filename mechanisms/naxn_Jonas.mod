@@ -7,11 +7,12 @@ NEURON {
 	SUFFIX nafJonas
 	USEION na READ ena WRITE ina
 	RANGE  gbar, sh, ina, gna, mtau, htau
+	GLOBAL q10
 }
 
 PARAMETER {
 	sh   = 0	(mV)
-	gbar = 0.010   	(mho/cm2)	
+	gbar = 1   	(mho/cm2)	
 								
 	tha  = -105.023 (mV)		: v 1/2 for act	
 	qa   = 17.7094	(mV)		: act slope (4.5)		
@@ -25,7 +26,7 @@ PARAMETER {
 	qg   = 13.3097  (mV)
 	mmin=0.002	
 	hmin=0.05			
-	q10=2
+	q10  = 2			: temperature sensitivity
 	Rg   = 6.62694 	(/ms)		: inact recov (v) 	
 	Rd   = 0.000354	(/ms)		: inact (v)	
 

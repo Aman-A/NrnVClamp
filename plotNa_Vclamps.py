@@ -10,15 +10,20 @@ import pickle
 import numpy as np 
 from plot_Vclamp import plot_recs,plot_gmax#,plot_tau
 #chan_names = ['nafJonas2']
-chan_names = ['na8st','nax','MCna1']
+# chan_names = ['na8st','nax','MCna1']
+# chan_names = ['SKv3_1']
+chan_names = ['Im','Kv7']
+# chan_names = ['nax','nav6','NaTa_t']
 T = 37
+rec_x_lims=(0,100)
 #chan_names = ['naf','na16']
 #chan_names = ['NaTa_t','naf']
 colors = [(0, 0.4470, 0.7410),(0.8500,0.3250,0.0980),(0.9290,0.6940, 0.1250),
           (0.494,0.184,0.556),(0.466,0.674,0.188)]
+colors = colors[0:len(chan_names)]
 fig_folder = 'Figures/Vclamp'
 data_folder = 'Data/Vclamp'
-save_figs = False
+save_figs = True
 # Load and plot data
 data = {}
 fig2 = None
@@ -27,10 +32,11 @@ for chan_name, colori in zip(chan_names,colors):
             data[chan_name] = pickle.load(pickle_file)
     
     datai = data[chan_name]
-    gmax = max([max(g) for g in datai['gs']])
+    gmax = np.nanmax([np.nanmax(g) for g in datai['gs']])
     g_vecsn = [g/gmax for g in datai['gs']]
+    # x_lims = (-5,datai['clamp_params']['dur2'])
     # Fig 1
-    fig1, ax1, ax2, ax3 = plot_recs(datai['t_vec'],datai['vs'],datai['currs'],g_vecsn) # plot v,curr, and g/gmax
+    fig1, ax1, ax2, ax3 = plot_recs(datai['t_vec'],datai['vs'],datai['currs'],g_vecsn,rec_x_lims) # plot v,curr, and g/gmax
     ax1.set_title(chan_name)
     if save_figs:
         fig1_name = os.path.join(fig_folder,chan_name + '_recs')

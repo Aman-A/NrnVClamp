@@ -28,7 +28,7 @@ def setParams(nrn_model_ver = "max4rP60c"):
     resave = 0
     load_potentials = 0
     scale_mainaxon_diam=1 
-    if nrn_model_ver is "max4rP60c":
+    if nrn_model_ver == "max4rP60c":
         # adult, rat with myelinated axon, using Zhu 2000 scaling
         myelinate_axon=1
         prune_axon=0
@@ -40,7 +40,7 @@ def setParams(nrn_model_ver = "max4rP60c"):
         scale_basal_L=1        
         min_myelinD=0.2 # um - matches paper
         max_myelin_order = 0
-    elif nrn_model_ver is "maxH":
+    elif nrn_model_ver == "maxH":
         # adult, human with myelinated axon using L2/3 PC rat BB: human Eyal 2018
         myelinate_axon=1
         prune_axon=0
@@ -52,7 +52,7 @@ def setParams(nrn_model_ver = "max4rP60c"):
         scale_basal_L=1.17 # using Romand 2011 L5 PC growth
         min_myelinD=0.2 # um - matches paper
         max_myelin_order=0
-    elif nrn_model_ver is "umaxr":
+    elif nrn_model_ver == "umaxr":
         # P14 rat, unmyelinated, no scaling
         myelinate_axon=0
         prune_axon=0
@@ -64,7 +64,7 @@ def setParams(nrn_model_ver = "max4rP60c"):
         scale_basal_L=1
         min_myelinD=0.2 # um - matches paper
         max_myelin_order=0
-    print "nrn_model_ver = ", nrn_model_ver
+    print("nrn_model_ver = {}".format(nrn_model_ver))
     Params = np.array([dt,tstop,v_init,amp,st_amp,st_del,st_dur,cell_model_id,\
             theta,phi,axon_num_nodes,ss_init,record_mode,\
             synapses_on,resave,st_mode,record_dt,load_potentials,replace_axon,\

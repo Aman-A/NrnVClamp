@@ -6,7 +6,8 @@
 NEURON	{
 	SUFFIX Nap_Et2
 	USEION na READ ena WRITE ina
-	RANGE gNap_Et2bar, gNap_Et2, ina
+	RANGE gNap_Et2bar, gNap_Et2, ina, mTau, hTau, mInf,hInf
+	GLOBAL q10
 }
 
 UNITS	{
@@ -17,6 +18,7 @@ UNITS	{
 
 PARAMETER	{
 	gNap_Et2bar = 0.00001 (S/cm2)
+	q10 = 2.3 : temperature sensitivity
 }
 
 ASSIGNED	{
@@ -60,7 +62,7 @@ INITIAL{
 PROCEDURE rates(){
   LOCAL qt
   :qt = 2.3^((34-21)/10)
-  qt = 2.3^((celsius-21)/10)	
+  qt = q10^((celsius-21)/10)	
 	UNITSOFF
 		mInf = 1.0/(1+exp((v- -52.6)/-4.6))
     if(v == -38){

@@ -11,6 +11,7 @@ NEURON {
 	RANGE tau_m, minf, hinf,tau_h, sinf, tau_s, m,h,s
 	RANGE minfshift, hinfshift, mtaushift, htaushift, ina
 	RANGE sinfshift, staushift, gp, g
+	GLOBAL q10
 }
 
 UNITS {

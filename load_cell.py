@@ -25,5 +25,5 @@ def create_cell(syn_enabled,cell_name,morph_file,biophys_temp,syn_temp):
                                 morph_file,biophys_temp,syn_temp))
     h("modify_cell(cell,prune_meth)")
     cell = h.cell
-    print "Loaded cell", cell_name
+    print("Loaded cell", cell_name)
     return cell

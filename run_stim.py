@@ -1,4 +1,4 @@
-import numpy as np 
+# import numpy as np 
 import os
 import matplotlib
 matplotlib.use('qt5agg')
@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 from setParams import setParams
 from TMS_wave import TMS_wave
 # Start NEURON
-from neuron import gui
+# from neuron import gui # TODO: neuron.gui causes spyder to crash
 from neuron import h # make sure default -NSTACK and -NFRAME are set to 100000,20000
+h.load_file('stdrun.hoc')
 # Load cell information 
 from cells import get_cell_files
 from load_cell import create_cell
@@ -25,7 +26,7 @@ tstop = params_vec[1]
 # Generate TMS waveform
 mode = 3 # MagProX100 Monophasic
 delay = dt
-plot_wave = 0
+plot_wave = 1
 tvec, Evec = TMS_wave(dt,tstop,delay,mode,plot_wave)
 
 # Initialize hoc code
@@ -57,7 +58,7 @@ h.init_record_spikes()
 def stimul(plot_on=True,v_label="Node[373]",fig=None,ax=None):
     h.stimul()  
     #plt.cla()
-   #ax.plot(t,v_soma,color='k',linewidth=1)
+    ax.plot(t,v_soma,color='k',linewidth=1)
     if plot_on:
         if not fig:
             fig = plt.figure()
@@ -72,11 +73,12 @@ def stimul(plot_on=True,v_label="Node[373]",fig=None,ax=None):
         plt.show()
         return fig, ax
 
-#h.find_thresh()
-#threshE = h.threshE    
-#h.AMP = threshE
-#stimul()
-#print "Threshold E =", threshE
+h.find_thresh()
+threshE = h.threshE    
+h.AMP = threshE
+fig = plt.figure(); ax = fig.add_subplot(111)
+stimul(plot_on=True,v_label="Node[373]",fig=fig,ax=ax)
+print("Threshold E =", threshE)
 
 Node_secList = h.Node_secList
 axonal = h.cell.axonal
@@ -91,6 +93,6 @@ def change_htau(htau_scale=1,seclist=axonal):
             sec.htau_scale_NaTa_t = htau_scale
 
 
-#plt.figure()
-#ax = plt.subplot(111)
-#ax.plot(mtau_scaling,threshEs)
+# plt.figure()
+# ax = plt.subplot(111)
+# ax.plot(mtau_scaling,threshEs)
