@@ -24,7 +24,7 @@ from scipy.ndimage import gaussian_filter
 from fit_taus import fit_double_exp,fit_single_exp, single_exp
 fig_folder = 'Figures/Vclamp'
 data_folder = 'Data/Vclamp'
-calc_tau = False
+calc_tau = True
 fc = None # Hz (fc = 10 kHz from Schmidt-Hieber 2010 for gaussian filter)
 save_figs = False
 save_data = False
@@ -41,20 +41,24 @@ all_channels = {'NaTa_t':{'gbar':'gNaTa_tbar','g':'gNaTa_t','color':'b'}, # Blue
             'na_kole2008':{'gbar':'gbar','g':'gna','color':'k'}, # Somatic Nav (Kole 2008)
             'nafJonas':{'gbar':'gbar','g':'gna','color':'g'}, # Fast Na in MFB (based on Engel 2005, impl in Schmidt-Hieber 2008)
             'NaV':{'gbar':'gbar','g':'gna','color':'r'}, # Mouse Na from Allen models, based on (Carter 2012) (37° rec in mouse CA1 pyramids)
-            'nax':{'gbar':'gbar','g':'gna','color':'k'}, # Axonal Na 8st model from Schmidt-Hieber 2010
-            'na8st':{'gbar':'gbar','g':'gna','color':'k'}, # Somatic Na 8st model from Schmidt-Hieber 2010
+            'nax':{'gbar':'gbar','g':'gna','color':'r'}, # Axonal Na 8st model from Schmidt-Hieber 2010
+            'na8st':{'gbar':'gbar','g':'gna','color':'g'}, # Somatic Na 8st model from Schmidt-Hieber 2010
             'MCna1':{'gbar':'gna1bar','g':'gna1','color':'r'}, # 2-closed, 1 open state Na channel (Baranauskas 2006)
             'nav6':{'gbar':'gbar','g':'g','color':'m'}, # Nav1.6 by Nathan Titus (adapted from Tigerholm model)
             'Nap_Et2':{'gbar':'gNap_Et2bar','g':'gNap_Et2','color':'b'}, # Nap Blue Brain from Magistretti Alonso, mtau*6
             'nap':{'gbar':'gbar','g':'g','color':'g'}, # Nap Traub 2003 
             'nap_roy':{'gbar':'gbar','g':'g','color':'r'}, # Nap Royeck 2008 used in Cohen 2020
+            'nav2shift8':{'gbar':'gbar','g':'g','color':'b'}, # nav1.2 approx by Nathan Titus (adated from Tigerholm/Nav1.8)
+            'hhmfb':{'gbar':'gnabar','g':'gna','color':'g'} # TODO: fix! hhmfb based on E&J 2005 used in Schmidt-Hieber 2010
             }
+# sim_channels = ['NaTa_t','NaTs2_t']
 # sim_channels = ['NaTa_t','NaTs2_t','na16','na12','nafJonas','nax']
 # sim_channels = ['nav6','nax','na8st','na16','na12','NaTa_t','NaTs2_t','nafJonas']
 # sim_channels = ['NaTa_t','NaTs2_t','na16','na12']
 # sim_channels = ['NaTs2_t','NaTa_t','na8st','nax'] # 'na16','na12','nax',
 # sim_channels = ['Nap_Et2','nap','nap_roy'] $ persistent currents
-sim_channels = ['nafJonas']
+# sim_channels = ['nav6','nav2shift8','nax','na8st']
+sim_channels = ['NaTa_t']
 channels = {k:all_channels[k] for k in sim_channels if k in all_channels}
 #colors = ['k','r','b','g','m']
 curr_name = 'ina'
@@ -75,7 +79,7 @@ clamp_params = {'amp1':-120,
 dt = 0.001 # 1 µs
 Ena = 50 # 55 for Kole 2008
 T = 37
-q10 = None # rate constant coefficient
+q10 = 3.0 # rate constant coefficient
 # q10 = None  # use mod file default
 # Plot activation curves
 fig2 = None # g/gmax curves
@@ -158,6 +162,8 @@ for chan_name,_ in channels.items():
     datai['gmaxs'] = gmaxs
     datai['clamp_params'] = clamp_params
     datai['params'] = clamp_test.params
+    if calc_tau:
+        datai['tau1'] = tau1
     if save_data:
         with open(os.path.join(data_folder,chan_name+'_act_data_T_{}.pkl'.format(T)),'wb') as pickle_file:
             pickle.dump(datai,pickle_file)

@@ -14,6 +14,7 @@ COMMENT
   Dec 17, 2007: hScale to account for slower inactivation in the soma, CSH
   Sep 08, 2008: Make rate parameters range variables
   Apr 17, 2010: global inactivation shift; make vShift (Donnan) global
+  May 3, 2010: Edited by Aman Aberra 
 ENDCOMMENT
 
 UNITS {
@@ -30,6 +31,7 @@ NEURON {
     NONSPECIFIC_CURRENT il
     RANGE gnabar, gkbar, gl, el, gna, gk, hScale, am0, am1, am2, bm0, bm1, ah0, ah1, bh0, bh1, bh2
     GLOBAL minf, hinf, ninf, mtau, htau, ntau, vShift, vShift_inact
+    GLOBAL q10
 }
  
 PARAMETER {
@@ -48,13 +50,14 @@ PARAMETER {
     bh1  = 1.76769e+1 (mV)
     bh2  = 1.33097e+1 (mV)
     
-    gnabar = .12 (mho/cm2)	<0,1e9>
-    gkbar = 0 (mho/cm2)	<0,1e9>
-    gl = 0 (mho/cm2)	      <0,1e9>
+    gnabar = .12 (S/cm2)	<0,1e9>
+    gkbar = 0 (S/cm2)	<0,1e9>
+    gl = 0 (S/cm2)	      <0,1e9>
     el = -80.0 (mV)
     vShift = 12 (mV) :shift to the right to account for Donnan potentials 
     vShift_inact = 0 (mV) :global inactivation shift to align with 8-state model
     hScale = 1   : account for slower inactivation in the soma
+    q10 = 2.3
 }
  
 STATE {
@@ -65,8 +68,8 @@ ASSIGNED {
     v (mV)
     ena (mV)
     ek (mV)
-    gna (mho/cm2)
-    gk (mho/cm2)
+    gna (S/cm2)
+    gk (S/cm2)
     ina (mA/cm2)
     ik (mA/cm2)
     il (mA/cm2)
@@ -105,9 +108,9 @@ DERIVATIVE states {
 PROCEDURE rates(v(mV)) {  
     :Computes rate and other constants at current v.
     :Call once from HOC to initialize inf at resting v.
-    LOCAL  alpha, beta, sum, vS
+    LOCAL  alpha, beta, sum, vS,qt
     TABLE minf, mtau, hinf, htau, ninf, ntau FROM -100 TO 100 WITH 200
-
+    qt=q10^((celsius-24)/10)
 UNITSOFF
     vS = v-vShift
     : "m" sodium activation system
@@ -115,21 +118,21 @@ UNITSOFF
     alpha = am0 * vtrap(-(vS-am1), am2)
     beta =  bm0 * exp(-vS/bm1)
     sum = alpha + beta
-    mtau = 1/sum
+    mtau = 1/(sum*qt)
     minf = alpha/sum
 
     :"h" sodium inactivation system
     alpha = hScale * ah0 * exp(-(vS-vShift_inact)/ah1)
     beta = hScale * bh0 / (exp(-((vS-vShift_inact)+bh1)/bh2) + 1)
     sum = alpha + beta
-    htau = 1/sum
+    htau = 1/(sum*qt)
     hinf = alpha/sum
     
     :"n" potassium activation system
     alpha = .01*vtrap(-(v+55),10) 
     beta = .125*exp(-(v+65)/80)
     sum = alpha + beta
-    ntau = 1/sum
+    ntau = 1/(sum*qt)
     ninf = alpha/sum
 }
  

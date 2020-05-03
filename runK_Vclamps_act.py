@@ -38,18 +38,19 @@ all_channels = {'K_Tst':{'gbar':'gK_Tstbar','g':'gK_Tst','color':'b'}, # Blue Br
                 'SKv3_1':{'gbar':'gSKv3_1bar','g':'gSKv3_1','color':'g'}, # Blue Brain Kv3.1 (Shaw related)
                 'Kv7':{'gbar':'gbar','g':'g','color':'k'}, # Kv7 axonal m-current Hallerman 2012 
                 'Im':{'gbar':'gImbar','g':'gIm','color':'y'}, # Blue Brain M-urrent (Adams 1982)
+                'kd':{'gbar':'gkbar','g':'gk','color':'b'} # Shu 2007b Kv1 D current (taum = 0.6 ms, tauh = 1.5 s)
                 } 
 
-sim_channels = ['Im','Kv7']
+
+sim_channels = ['Kv7','Kv1','kd']
 # sim_channels = ['Kv7','Im']
 # TODO figure out why first current of Kv7 always has NaNs
-
 channels = {k:all_channels[k] for k in sim_channels if k in all_channels}
 #colors = ['k','r','b','g','m']
 clamp_params = {'amp1':-120, 
                 'dur1':100, 
                 'amp2':-90,
-                'dur2': 200,
+                'dur2': 3000,
                 'amp3':0,
                 'dur3':0,
                 'v_stepi':-100,
@@ -58,6 +59,7 @@ clamp_params = {'amp1':-120,
                 'amp_to_step': 'amp2', # activation protocol steps 2nd phase
                 'rs':1e-5,# MOhm
                 'x':0.5}
+x_lims = (-1,3000)
 # NEURON settings
 # Settings
 curr_name = 'ik'
@@ -121,7 +123,7 @@ for chan_name,chan in channels.items():
     g_vecsn = [g/gmax for g in gs]
     # g_vecsn = gs
     
-    fig1, ax1, ax2, ax3 = plot_recs(t_vec,vs,currs,g_vecsn) # plot v,curr, and g/gmax
+    fig1, ax1, ax2, ax3 = plot_recs(t_vec,vs,currs,g_vecsn,x_lims) # plot v,curr, and g/gmax
     ax1.set_title(chan_name)
     # save recordings for this current
     if save_figs:
