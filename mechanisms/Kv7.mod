@@ -63,7 +63,7 @@ INITIAL {
 BREAKPOINT {
 	
 	SOLVE state METHOD cnexp
-	tadj = q10^((celsius - temp)/10)	:this repeated calculation allows changes in temperature during the simulation
+	:tadj = q10^((celsius - temp)/10)	:this repeated calculation allows changes in temperature during the simulation
 	:ik = (1e-4) * gbar * m * (v-ek)
 	g = gbar * m
 	ik = g * (v-ek)

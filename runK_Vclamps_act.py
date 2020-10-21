@@ -27,8 +27,8 @@ fig_folder = 'Figures/Vclamp'
 data_folder = 'Data/Vclamp'
 calc_tau = False # TODO fix time constant fitting
 fc = None # Hz (fc = 10 kHz from Schmidt-Hieber 2010 for gaussian filter)
-save_figs = True
-save_data = True
+save_figs = False
+save_data = False
 #chan_names = ['MCna1']
 #gbar_names = ['gna1bar']
 #g_names = ['gna1']
@@ -42,7 +42,7 @@ all_channels = {'K_Tst':{'gbar':'gK_Tstbar','g':'gK_Tst','color':'b'}, # Blue Br
                 } 
 
 
-sim_channels = ['Kv7','Kv1','kd']
+sim_channels = ['Kv7']
 # sim_channels = ['Kv7','Im']
 # TODO figure out why first current of Kv7 always has NaNs
 channels = {k:all_channels[k] for k in sim_channels if k in all_channels}
@@ -66,21 +66,24 @@ curr_name = 'ik'
 dt = 0.025 # 1 µs
 Ek = -100 # 55 for Kole 2008
 T = 37
-q10 = 2.3 # rate constant coefficient
+q10 = 3.0 # rate constant coefficient
 # Plot activation curves
 fig2 = None # g/gmax curves
 fig3 = None # taum curves
 min_curr = 0 # 0.1% relative to cmin_global
 # curr_names all the same
 #for chan_name,gbar_name,g_name,colori in zip(chan_names,gbar_names,g_names,colors):
+import time
 for chan_name,chan in channels.items():
-    
+
     clamp_test = Vclamp_tester(chan_name=chan_name,curr_name=curr_name,\
                                gbar_name=chan['gbar'],g_name=chan['g'],\
-                            clamp_params=clamp_params,dt=dt,T=T,q10=q10,ek=Ek)
-
+                            clamp_params=clamp_params,dt=dt,T=T,q10=q10,ek=Ek)    
     # Run vclamp simulations
+    start_time = time.time()
     v_steps,t_vec,vs,currs,gs = clamp_test.run_protocol(clamp_params)
+    time_elapsed = time.time() - start_time
+    print('time_elapsed = {:.3} s'.format(time_elapsed))
     cmax_global = np.nanmax([np.nanmax(abs(c)) for c in currs]) # abs min
     t_vec = t_vec - clamp_params['dur1'] # V step starts at 0
     # get tau fits for currents 

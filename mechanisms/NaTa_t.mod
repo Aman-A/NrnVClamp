@@ -14,6 +14,7 @@ UNITS	{
 }
 
 PARAMETER	{
+	vShift = 0 (mV) : try -8 mV to match Schmidt-Hieber 2010
 	gNaTa_tbar = 1.0 (S/cm2)
 	vtha = -38 (mV) : v 1/2 for activation (m)
 	vthi = -66 (mV) : v 1/2 for inactivation (h)
@@ -67,20 +68,20 @@ PROCEDURE rates(q10){
   :qt = 2.3^((34-21)/10)
   qt = q10^((celsius-21)/10)	
   UNITSOFF
-    if(v == -38){
+    if(v-vShift == -38){
     	v = v+0.0001
     }
-		mAlpha = (0.182 * (v - vtha))/(1-(exp(-(v- vtha)/qa)))
-		mBeta  = (0.124 * (-v +vtha))/(1-(exp(-(-v +vtha)/qa)))
+		mAlpha = (0.182 * ((v-vShift) - vtha))/(1-(exp(-((v-vShift)- vtha)/qa)))
+		mBeta  = (0.124 * (-(v-vShift) +vtha))/(1-(exp(-(-(v-vShift) +vtha)/qa)))
 		mTau = (mtau_scale/(mAlpha + mBeta))/qt
 		mInf = mAlpha/(mAlpha + mBeta)
 
-    if(v == -66){
+    if(v-vShift == -66){
       v = v + 0.0001
     }
 
-		hAlpha = (-0.015 * (v- vthi))/(1-(exp((v- vthi)/qi)))
-		hBeta  = (-0.015 * (-v +vthi))/(1-(exp((-v +vthi)/qi)))
+		hAlpha = (-0.015 * ((v-vShift)- vthi))/(1-(exp(((v-vShift)- vthi)/qi)))
+		hBeta  = (-0.015 * (-(v-vShift) +vthi))/(1-(exp((-(v-vShift) +vthi)/qi)))
 		hTau = (htau_scale/(hAlpha + hBeta))/qt
 		hInf = hAlpha/(hAlpha + hBeta)
 	UNITSON

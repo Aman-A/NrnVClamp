@@ -27,7 +27,7 @@ def fit_single_exp(t_vec,y_vec,p0=None,bounds=None):
         if p0 is None:
             p0 = (y_vec.min(),0.1,t_vec[1])
         if bounds is None:
-            bounds = ([1.5*y_vec.min(),0.005,0],[0,0.8,0.1])        
+            bounds = ([1.5*y_vec.min(),0.005,0],[0,2.0,0.1])        
     else: # outward current, prob K
         if p0 is None:
             p0 = (y_vec.max(),1,t_vec[1])

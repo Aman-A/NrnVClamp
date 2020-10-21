@@ -14,7 +14,7 @@ from plot_Vclamp import plot_recs,plot_gmax, plot_tau
 # chan_names = ['SKv3_1']
 # chan_names = ['Im','Kv7']
 # chan_names = ['nax','nav6','NaTa_t']
-chan_names = ['nav6','nav2shift8','nax','na8st','na16','na12','NaTa_t','NaTs2_t']
+chan_names = ['Nap_Et2','nap','nap_roy','nav2shift8']
 T = 37
 rec_x_lims=(0,5)
 #chan_names = ['naf','na16']
@@ -24,6 +24,7 @@ rec_x_lims=(0,5)
 # colors = colors[0:len(chan_names)]
 import matplotlib.pyplot as plt
 colors = [plt.cm.Set2(n/len(chan_names)) for n in np.arange(0,len(chan_names))]
+# colors = ['k','r']
 fig_folder = 'Figures/Vclamp'
 data_folder = 'Data/Vclamp'
 save_figs = True

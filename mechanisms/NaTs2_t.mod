@@ -17,6 +17,7 @@ UNITS	{
 PARAMETER	{
 	gNaTs2_tbar = 1 (S/cm2)
 	q10  = 2.3			: temperature sensitivity
+	vShift = 0 (mV) : try -8 mV to match Schmidt-Hieber 2010
 }
 
 ASSIGNED	{
@@ -62,19 +63,19 @@ PROCEDURE rates(q10){
   :qt = 2.3^((34-21)/10)
   qt = q10^((celsius-21)/10)	
 	UNITSOFF
-    if(v == -32){
+    if(v-vShift == -32){
     	v = v+0.0001
     }
-		mAlpha = (0.182 * (v- -32))/(1-(exp(-(v- -32)/6)))
-		mBeta  = (0.124 * (-v -32))/(1-(exp(-(-v -32)/6)))
+		mAlpha = (0.182 * ((v-vShift)- -32))/(1-(exp(-((v-vShift)- -32)/6)))
+		mBeta  = (0.124 * (-(v-vShift) -32))/(1-(exp(-(-(v-vShift) -32)/6)))
 		mInf = mAlpha/(mAlpha + mBeta)
 		mTau = (1/(mAlpha + mBeta))/qt
 
-    if(v == -60){
+    if(v-vShift == -60){
       v = v + 0.0001
     }
-		hAlpha = (-0.015 * (v- -60))/(1-(exp((v- -60)/6)))
-		hBeta  = (-0.015 * (-v -60))/(1-(exp((-v -60)/6)))
+		hAlpha = (-0.015 * ((v-vShift)- -60))/(1-(exp(((v-vShift)- -60)/6)))
+		hBeta  = (-0.015 * (-(v-vShift) -60))/(1-(exp((-(v-vShift) -60)/6)))
 		hInf = hAlpha/(hAlpha + hBeta)
 		hTau = (1/(hAlpha + hBeta))/qt
 	UNITSON

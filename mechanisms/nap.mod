@@ -16,7 +16,7 @@ UNITS {
 NEURON { 
 	SUFFIX nap
 	USEION na READ ena WRITE ina
-	RANGE gbar, ina
+	RANGE gbar, ina, g
 }
 
 PARAMETER { 	
