@@ -4,7 +4,7 @@
 NEURON	{
 	SUFFIX Ca_HVA
 	USEION ca READ eca WRITE ica
-	RANGE gCa_HVAbar, gCa_HVA, ica 
+	RANGE gCa_HVAbar, gCa, ica
 }
 
 UNITS	{
@@ -14,7 +14,7 @@ UNITS	{
 }
 
 PARAMETER	{
-	gCa_HVAbar = 0.00001 (S/cm2) 
+	gCa_HVAbar = 0.00001 (S/cm2)
 }
 
 ASSIGNED	{
@@ -32,7 +32,7 @@ ASSIGNED	{
 	hBeta
 }
 
-STATE	{ 
+STATE	{
 	m
 	h
 }
@@ -57,10 +57,10 @@ INITIAL{
 
 PROCEDURE rates(){
 	UNITSOFF
-        if((v == -27) ){        
+        if((v == -27) ){
             v = v+0.0001
         }
-		mAlpha =  (0.055*(-27-v))/(exp((-27-v)/3.8) - 1)        
+		mAlpha =  (0.055*(-27-v))/(exp((-27-v)/3.8) - 1)
 		mBeta  =  (0.94*exp((-75-v)/17))
 		mInf = mAlpha/(mAlpha + mBeta)
 		mTau = 1/(mAlpha + mBeta)

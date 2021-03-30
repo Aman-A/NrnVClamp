@@ -5,17 +5,18 @@ TITLE Mouse sodium current
 NEURON {
   SUFFIX NaV
   USEION na READ ena WRITE ina
-  RANGE g, gbar
+  RANGE g, gbar, ina
+  GLOBAL q10
 }
 
-UNITS { 
+UNITS {
 	(mV) = (millivolt)
 	(S) = (siemens)
 }
 
 PARAMETER {
 	gbar = .015			(S/cm2)
-
+	q10  = 2.3			: temperature sensitivity - Added by Aman
 	: kinetic parameters
 	Con = 0.01			(/ms)					: closed -> inactivated transitions
 	Coff = 40				(/ms)					: inactivated -> closed transitions
@@ -70,10 +71,10 @@ ASSIGNED {
 	bi4 		(/ms)
 	bi5 		(/ms)
 	bin 		(/ms)
-	
+
 	v				(mV)
  	ena			(mV)
-	ina			(milliamp/cm2)
+	ina			(mA/cm2)
 	g				(S/cm2)
 	celsius (degC)
 }
@@ -140,14 +141,14 @@ LINEAR seqinitial { : sets initial equilibrium
 	~ I2*f12 + C3*fi3 + I4*bi3 - I3*(b12+bi3+f13) = 0
 	~ I3*f13 + C4*fi4 + I5*b14 - I4*(b13+bi4+f14) = 0
 	~ I4*f14 + C5*fi5 + I6*b1n - I5*(b14+bi5+f1n) = 0
-	
+
 	~ C1 + C2 + C3 + C4 + C5 + O + I1 + I2 + I3 + I4 + I5 + I6 = 1
 }
 
 PROCEDURE rates(v(mV) )
 {
   LOCAL qt
-  qt = 2.3^((celsius-37)/10)
+  qt = q10^((celsius-37)/10)
 
 	f01 = qt * 4 * alpha * exp(v/x1)
 	f02 = qt * 3 * alpha * exp(v/x1)

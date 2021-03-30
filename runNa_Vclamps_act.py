@@ -26,8 +26,8 @@ fig_folder = 'Figures/Vclamp'
 data_folder = 'Data/Vclamp'
 calc_tau = True
 fc = None # Hz (fc = 10 kHz from Schmidt-Hieber 2010 for gaussian filter)
-save_figs = True
-save_data = True
+save_figs = False
+save_data = False
 #chan_names = ['MCna1']
 #gbar_names = ['gna1bar']
 #g_names = ['gna1']
@@ -40,7 +40,7 @@ all_channels = {'NaTa_t':{'gbar':'gNaTa_tbar','g':'gNaTa_t','color':'b'}, # Blue
             'nax_kole2008':{'gbar':'gbar','g':'gna','color':'k'}, # Axonal Nav (Kole 2008)
             'na_kole2008':{'gbar':'gbar','g':'gna','color':'k'}, # Somatic Nav (Kole 2008)
             'nafJonas':{'gbar':'gbar','g':'gna','color':'g'}, # Fast Na in MFB (based on Engel 2005, impl in Schmidt-Hieber 2008)
-            'NaV':{'gbar':'gbar','g':'gna','color':'r'}, # Mouse Na from Allen models, based on (Carter 2012) (37° rec in mouse CA1 pyramids)
+            'NaV':{'gbar':'gbar','g':'g','color':'y'}, # Mouse Na from Allen models, based on (Carter 2012) (37° rec in mouse CA1 pyramids)
             'nax':{'gbar':'gbar','g':'gna','color':'r'}, # Axonal Na 8st model from Schmidt-Hieber 2010
             'na8st':{'gbar':'gbar','g':'gna','color':'g'}, # Somatic Na 8st model from Schmidt-Hieber 2010
             'MCna1':{'gbar':'gna1bar','g':'gna1','color':'r'}, # 2-closed, 1 open state Na channel (Baranauskas 2006)
@@ -84,13 +84,13 @@ q10 = 3.0 # rate constant coefficient
 # Plot activation curves
 fig2 = None # g/gmax curves
 fig3 = None # taum curves
-min_curr = 0 # relative to cmin_global
+min_curr = 1e-5# relative to cmin_global
 # curr_names all the same
 #for chan_name,gbar_name,g_name,colori in zip(chan_names,gbar_names,g_names,colors):
-for chan_name,_ in channels.items():
+for chan_name,chan_params in channels.items():
     
-    clamp_test = Vclamp_tester(chan_name=chan_name,curr_name=curr_name,gbar_name=channels[chan_name]['gbar'],\
-                                   g_name=channels[chan_name]['g'],clamp_params=clamp_params,dt=dt,T=T,q10=q10,ena=Ena)
+    clamp_test = Vclamp_tester(chan_name=chan_name,curr_name=curr_name,gbar_name=chan_params['gbar'],\
+                                   g_name=chan_params['g'],clamp_params=clamp_params,dt=dt,T=T,q10=q10,ena=Ena)
 
     # Run vclamp simulations
     v_steps,t_vec,vs,currs,gs = clamp_test.run_protocol(clamp_params)
@@ -103,8 +103,8 @@ for chan_name,_ in channels.items():
         t_acts = []
         c_actfs = [] # 
         for i,c in enumerate(currs):
-            t_act = t_vec[np.int(clamp_params['dur1']/dt):c.argmin()]
-            c_act = c[np.int(clamp_params['dur1']/dt):c.argmin()]
+            t_act = t_vec[int(clamp_params['dur1']/dt):c.argmin()]
+            c_act = c[int(clamp_params['dur1']/dt):c.argmin()]
             if np.abs(c.min()) > min_curr*np.abs(cmin_global): # make sure current is big enough
                 try:
                     if fc is not None:
@@ -141,18 +141,18 @@ for chan_name,_ in channels.items():
         fig1.savefig(fig1_name,dpi=200)
     # Add gmax curve to fig2
     if not fig2:
-        fig2,ax4, gmaxs = plot_gmax(v_steps,gs,channels[chan_name]['color'],chan_name) # create fig
+        fig2,ax4, gmaxs = plot_gmax(v_steps,gs,chan_params['color'],chan_name) # create fig
     else:
-        _,_,gmaxs = plot_gmax(v_steps,gs,channels[chan_name]['color'],chan_name,fig2,ax4) # add to fig
+        _,_,gmaxs = plot_gmax(v_steps,gs,chan_params['color'],chan_name,fig2,ax4) # add to fig
     # Add tau curve to fig3
     if calc_tau:
         # add fits to current plot
         for tf,cf in zip(t_acts,c_actfs):
             ax2.plot(tf,cf,'k--')
         if not fig3:
-            fig3,ax5 = plot_tau(v_steps,tau1,channels[chan_name]['color'],chan_name) # create fig
+            fig3,ax5 = plot_tau(v_steps,tau1,chan_params['color'],chan_name) # create fig
         else:
-            plot_tau(v_steps,tau1,channels[chan_name]['color'],chan_name,fig3,ax5) # add to fig
+            plot_tau(v_steps,tau1,chan_params['color'],chan_name,fig3,ax5) # add to fig
     datai = {}    
     datai['v_steps'] = v_steps
     datai['gs'] = gs
